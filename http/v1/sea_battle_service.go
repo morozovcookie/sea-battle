@@ -78,27 +78,9 @@ func (svc *SeaBattleService) ShipHandler(w http.ResponseWriter, r *http.Request)
 		svc.game.BattleField().Clear()
 	}
 
-	var (
-		req = &struct {
-			Coordinates []string `json:"Coordinates"`
-		}{}
-		validator = func(coordinates string) error {
-			var (
-				size  = svc.game.BattleField().Size()
-				regex = fmt.Sprintf(
-					`^[1-%d][A-%c]\s[1-%d][A-%c]$`, size, byte('A'+size-1), size, byte('A'+size-1))
-			)
-			if size == seabattle.MaxBattleFieldSize {
-				regex = `^((10)|([1-9]))[A-J]\s((10)|([1-9]))[A-J]$`
-			}
-
-			if !regexp.MustCompile(regex).MatchString(coordinates) {
-				return seabattle.ErrInvalidCoordinates
-			}
-
-			return nil
-		}
-	)
+	req := &struct {
+		Coordinates []string `json:"Coordinates"`
+	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		svc.writeError(w, http.StatusBadRequest, err)
@@ -109,7 +91,7 @@ func (svc *SeaBattleService) ShipHandler(w http.ResponseWriter, r *http.Request)
 	ships := make([]*seabattle.BattleShip, 0, len(req.Coordinates))
 
 	for _, coord := range req.Coordinates {
-		if err := validator(coord); err != nil {
+		if err := validateShipCoordinates(coord, svc.game.BattleField().Size()); err != nil {
 			svc.writeError(w, http.StatusBadRequest, err)
 
 			return
@@ -149,38 +131,32 @@ func (svc *SeaBattleService) ShipHandler(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusCreated)
 }
 
+func validateShipCoordinates(coordinates string, size int) error {
+	regex := fmt.Sprintf(`^[1-%d][A-%c]\s[1-%d][A-%c]$`, size, byte('A'+size-1), size, byte('A'+size-1))
+
+	if size == seabattle.MaxBattleFieldSize {
+		regex = `^((10)|([1-9]))[A-J]\s((10)|([1-9]))[A-J]$`
+	}
+
+	if !regexp.MustCompile(regex).MatchString(coordinates) {
+		return seabattle.ErrInvalidCoordinates
+	}
+
+	return nil
+}
+
 func (svc *SeaBattleService) ShotHandler(w http.ResponseWriter, r *http.Request) {
-	var (
-		req = &struct {
-			Coordinates string `json:"сoord"`
-		}{}
-		validator = func(coordinates string) error {
-			var (
-				size  = svc.game.BattleField().Size()
-				regex = fmt.Sprintf(`^[1-%d][A-%c]$`, size, byte('A'+size-1))
-			)
+	req := &struct {
+		Coordinates string `json:"сoord"`
+	}{}
 
-			if size == seabattle.MaxBattleFieldSize {
-				regex = `^((10)|([1-9]))[A-J]$`
-			}
-
-			if !regexp.MustCompile(regex).MatchString(coordinates) {
-				return seabattle.ErrInvalidCoordinates
-			}
-
-			return nil
-		}
-
-		err error
-	)
-
-	if err = json.NewDecoder(r.Body).Decode(req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		svc.writeError(w, http.StatusBadRequest, err)
 
 		return
 	}
 
-	if err = validator(req.Coordinates); err != nil {
+	if err := validateShotCoordinates(req.Coordinates, svc.game.BattleField().Size()); err != nil {
 		svc.writeError(w, http.StatusBadRequest, err)
 
 		return
@@ -216,6 +192,20 @@ func (svc *SeaBattleService) ShotHandler(w http.ResponseWriter, r *http.Request)
 	if err = json.NewEncoder(w).Encode(resp); err != nil {
 		svc.writeError(w, http.StatusInternalServerError, err)
 	}
+}
+
+func validateShotCoordinates(coordinates string, size int) error {
+	regex := fmt.Sprintf(`^[1-%d][A-%c]$`, size, byte('A'+size-1))
+
+	if size == seabattle.MaxBattleFieldSize {
+		regex = `^((10)|([1-9]))[A-J]$`
+	}
+
+	if !regexp.MustCompile(regex).MatchString(coordinates) {
+		return seabattle.ErrInvalidCoordinates
+	}
+
+	return nil
 }
 
 func (svc *SeaBattleService) ClearHandler(w http.ResponseWriter, _ *http.Request) {

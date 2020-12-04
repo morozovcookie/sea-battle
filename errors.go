@@ -11,6 +11,8 @@ var (
 	ErrAllShipsAlreadyDestroyed      = errors.New("all ships already destroyed")
 	ErrClearFieldBeforePlaceNewShips = errors.New("destroy all ships or clear battlefield before place new " +
 		"ships")
-	ErrGameDidNotStarted = errors.New("game did not started")
-	ErrCellAlreadyTaken  = errors.New("cell already taken")
+	ErrGameDidNotStarted  = errors.New("game did not started")
+	ErrCellAlreadyTaken   = errors.New("cell already taken")
+	ErrGameAlreadyStarted = errors.New("game already started")
+	ErrNoShipWasNotPlaced = errors.New("no ship was not placed")
 )

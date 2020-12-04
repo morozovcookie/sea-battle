@@ -42,7 +42,7 @@ func NewBattleField(size int) (bf *BattleField, err error) {
 
 		for j := 0; j < size; j++ {
 			bf.cells[i][j] = BattleFieldCell{
-				originalRowName:    string(byte(i + 1 + 48)),
+				originalRowName:    string(byte(i + 1 + '0')),
 				originalColumnName: string(byte('A' + j)),
 				rowIndex:           i,
 				columnIndex:        j,

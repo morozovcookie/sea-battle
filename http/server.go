@@ -50,7 +50,7 @@ func NewServer(address string, logger *zap.Logger, opts ...ServerOption) (s *Ser
 }
 
 func (s *Server) ListenAndServe() (err error) {
-	s.logger.Info("starting")
+	s.logger.Info("starting", zap.String("address", s.address))
 
 	if err = s.srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		return err

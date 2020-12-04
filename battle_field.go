@@ -63,7 +63,7 @@ func (bf *BattleField) PlaceBattleShips(ships ...*BattleShip) (err error) {
 			return
 		}
 
-		bf.clear()
+		bf.Clear()
 	}(&err)
 
 	for _, ship := range ships {
@@ -97,6 +97,7 @@ func (bf *BattleField) PlaceBattleShips(ships ...*BattleShip) (err error) {
 		}
 
 		ship.AttachCells(cells...)
+		bf.PlaceShipEvent()
 	}
 
 	return nil
@@ -118,7 +119,7 @@ func getEndGridIndex(i, size, margin int) int {
 	return i
 }
 
-func (bf *BattleField) clear() {
+func (bf *BattleField) Clear() {
 	for i := 0; i < bf.size; i++ {
 		for j := 0; j < bf.size; j++ {
 			bf.cells[i][j].Clear()
